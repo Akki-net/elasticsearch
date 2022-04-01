@@ -5,9 +5,9 @@ const ImagesFullArchieveSchemaLatest = require('../models/ImagesFullArchieveSche
 exports.info = async (req, res, next) => {
   try {
     let message;
-    client.cluster.health({},function(err,resp,status) {  
+    client.cluster.health({}, function (err, resp, status) {
       message = resp
-      console.log("-- Client Health --",resp);
+      console.log("-- Client Health --", resp);
     });
 
     res.status(200).send(`<h2>-- Client Health -- Ok</h2>`)
@@ -17,7 +17,7 @@ exports.info = async (req, res, next) => {
   }
 }
 
-exports.create = async (req, res, next) => {
+exports.createIndex = async (req, res, next) => {
   try {
     const { index } = req.params
     let message;
@@ -35,6 +35,24 @@ exports.create = async (req, res, next) => {
 
 
     res.status(201).send(`<h2>index is created successfully!</h2>`)
+
+  } catch (error) {
+    next(error)
+  }
+}
+
+exports.deleteIndex = async (req, res, next) => {
+  try {
+    const { index } = req.params
+    client.indices.delete({ index }, function (err, resp, status) {
+      if (!err) {
+        console.log("delete", resp);
+      } else {
+        throw err
+      }
+    });
+
+    res.status(204).send(`<h2>index is deleted successfully!</h2>`)
 
   } catch (error) {
     next(error)

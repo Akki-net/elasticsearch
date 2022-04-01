@@ -1,7 +1,8 @@
 const elasticRouter = require('express').Router()
-const { create, info } = require('../controllers/elastic')
+const { createIndex, info, deleteIndex } = require('../controllers/elastic')
 
 elasticRouter.get('/info', info)
-elasticRouter.get('/create/:index', create)
+elasticRouter.get('/createIndex/:index', createIndex)
+elasticRouter.get('/deleteIndex/:index', deleteIndex)
 
 module.exports = elasticRouter
