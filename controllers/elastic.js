@@ -1,5 +1,7 @@
 'use strict'
 const client = require('../connection')
+const inputfile = require('../constituencies.json')
+const { makebulk, indexall } = require('../utils/helperFunc')
 const ImagesFullArchieveSchemaLatest = require('../models/ImagesFullArchieveSchemaLatest')
 
 exports.info = async (req, res, next) => {
@@ -115,6 +117,22 @@ exports.documentDel = async (req, res, next) => {
     });
 
     res.status(204).send(`<h2>Document is deleted successfully!</h2>`)
+
+  } catch (error) {
+    next(error)
+  }
+}
+
+exports.addBulk = async (req, res, next) => {
+  try {
+    makebulk(inputfile, function (response) {
+      console.log("Bulk content prepared");
+      indexall(response, function (response) {
+        console.log(response);
+      })
+    });
+
+    res.status(201).send(`<h2>Documents are added successfully!</h2>`)
 
   } catch (error) {
     next(error)
