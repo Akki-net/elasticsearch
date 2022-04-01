@@ -1,8 +1,8 @@
 'use strict'
 const client = require('../connection')
-const inputfile = require('../constituencies.json')
+// const inputfile = require('../constituencies.json')
 const { makebulk, indexall } = require('../utils/helperFunc')
-const ImagesFullArchieveSchemaLatest = require('../models/ImagesFullArchieveSchemaLatest')
+const T_images_full_archieve_Mongodb_2022 = require('../models/T_images_full_archieve_Mongodb_2022')
 
 exports.info = async (req, res, next) => {
   try {
@@ -125,12 +125,22 @@ exports.documentDel = async (req, res, next) => {
 
 exports.addBulk = async (req, res, next) => {
   try {
-    makebulk(inputfile, function (response) {
-      console.log("Bulk content prepared");
-      indexall(response, function (response) {
-        console.log(response);
-      })
-    });
+    let countNow = 0
+    const tc = await T_images_full_archieve_Mongodb_2022.count()
+
+    while (countNow !== tc) {
+      const inputfile = await T_images_full_archieve_Mongodb_2022.find({}).limit(1000)
+      countNow += 1000
+      console.log('count now:', countNow)
+      res.status(201).send(`<h2>Please wait...</h2>`)
+      
+      makebulk(inputfile, function (response) {
+        console.log("Bulk content prepared");
+        indexall(response, function (response) {
+          console.log(response);
+        })
+      });
+    }
 
     res.status(201).send(`<h2>Documents are added successfully!</h2>`)
 
