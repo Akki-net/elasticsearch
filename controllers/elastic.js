@@ -81,3 +81,20 @@ exports.documentAdd = async (req, res, next) => {
     next(error)
   }
 }
+
+exports.documentShow = async (req, res, next) => {
+  try {
+    const { index, type } = req.params
+    client.count({ index, type }, function (err, resp, status) {
+      if (!err) {
+        res.status(200).send(resp)
+        console.log(type, resp);
+      } else {
+        throw err
+      }
+    });
+
+  } catch (error) {
+    next(error)
+  }
+}
