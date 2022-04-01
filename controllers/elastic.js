@@ -58,3 +58,26 @@ exports.deleteIndex = async (req, res, next) => {
     next(error)
   }
 }
+
+exports.documentAdd = async (req, res, next) => {
+  try {
+    const { id, index, type } = req.body
+    client.index({
+      index,
+      id,
+      type,
+      body: { ...req.body }
+    }, function (err, resp, status) {
+      if (!err) {
+        console.log(resp);
+      } else {
+        throw err
+      }
+    });
+
+    res.status(201).send(`<h2>Document is created successfully!</h2>`)
+
+  } catch (error) {
+    next(error)
+  }
+}
