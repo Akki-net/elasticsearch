@@ -98,3 +98,25 @@ exports.documentShow = async (req, res, next) => {
     next(error)
   }
 }
+
+exports.documentDel = async (req, res, next) => {
+  try {
+    const { index, type, id } = req.params
+    client.delete({
+      index,
+      id,
+      type
+    }, function (err, resp, status) {
+      if (!err) {
+        console.log("delete", resp);
+      } else {
+        throw err
+      }
+    });
+
+    res.status(204).send(`<h2>Document is deleted successfully!</h2>`)
+
+  } catch (error) {
+    next(error)
+  }
+}
