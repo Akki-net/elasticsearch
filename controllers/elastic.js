@@ -129,11 +129,11 @@ exports.addBulk = async (req, res, next) => {
     const tc = await T_images_full_archieve_Mongodb_2022.count()
 
     while (countNow !== tc) {
-      const inputfile = await T_images_full_archieve_Mongodb_2022.find({}).limit(1000)
+      const inputfile = await T_images_full_archieve_Mongodb_2022.find({}).sort({_id:-1}).skip(countNow).limit(1000)
       countNow += 1000
       console.log('count now:', countNow)
-      res.status(201).send(`<h2>Please wait...</h2>`)
-      
+      // res.status(201).send(`<h2>Please wait...</h2>`)
+
       makebulk(inputfile, function (response) {
         console.log("Bulk content prepared");
         indexall(response, function (response) {
