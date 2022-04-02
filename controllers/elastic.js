@@ -1,8 +1,9 @@
 'use strict'
 const client = require('../connection')
 // const inputfile = require('../constituencies.json')
-const { makebulk, indexall } = require('../utils/helperFunc')
+const { makebulk, indexall, processText } = require('../utils/helperFunc')
 const T_images_full_archieve_Mongodb_2022 = require('../models/T_images_full_archieve_Mongodb_2022')
+const T_allkeyword_full = require('../models/T_allkeyword_full')
 
 exports.info = async (req, res, next) => {
   try {
@@ -174,6 +175,59 @@ exports.simpleSearch = async (req, res, next) => {
         })
       }
     });
+
+  } catch (error) {
+    next(error)
+  }
+}
+
+exports.searchByText = async (req, res, next) => {
+  try {
+    const { keyword } = req.params
+    console.log('check keyword', keyword)
+    let aidArr = []
+
+    processText(keyword, function (resp) {
+      resp.forEach(async searchKey => {
+        const Akeyword = new RegExp(searchKey, 'i')
+        const keyAid = await T_allkeyword_full.find({ Akeyword })
+        aidArr = keyAid.map(item => item.aid.toString())
+        console.log('check aid Array', aidArr)
+      })
+    })
+
+    client.search({
+      index: 'imagesbazaar',
+      type: 'search',
+      body: {
+        query: {
+          filtered: {
+            query: {
+              match_all: {}
+            },
+            filter: {
+              terms: {
+                aid: aidArr
+              }
+            }
+          }
+        },
+      }
+    }, function (error, response, status) {
+      if (error) {
+        console.log("search error: " + error)
+      }
+      else {
+        console.log("--- Response ---");
+        console.log(response);
+        console.log("--- Hits ---");
+        response.hits.hits.forEach(function (hit) {
+          res.status(200).json({ data: hit })
+          console.log(hit);
+        })
+      }
+    });
+
 
   } catch (error) {
     next(error)
