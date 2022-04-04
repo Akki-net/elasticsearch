@@ -4,7 +4,7 @@ let bulk = [];
 exports.makebulk = function (list, callback) {
     for (var current of list) {
         bulk.push(
-            { index: { _index: 'imagesbazaar', _type: 'search', _id: current._id } },
+            { index: { _index: 'imagesbazaar', _type: 'viewAll', _id: current._id } },
             {
                 "f_sno": current.f_sno,
                 "F_imgid": current.F_imgid,
@@ -29,14 +29,15 @@ exports.indexall = function (madebulk, callback) {
     client.bulk({
         maxRetries: 5,
         index: 'imagesbazaar',
-        type: 'search',
+        type: 'viewAll',
         body: madebulk
     }, function (err, resp, status) {
         if (err) {
             console.log(err);
         }
         else {
-            callback(resp.items);
+            // callback(resp.items);
+            setTimeout(function () { callback('Indexed ' + resp.items.length + ' items'); }, 2000);
         }
     })
 }
@@ -50,4 +51,34 @@ exports.processText = function (keyword, callback) {
             return sKey
     })
     callback(filteredCases)
+}
+
+exports.seekResult = (aidArr) => {
+    let data = []
+    client.search({
+        index: 'imagesbazaar',
+        type: 'viewAll',
+        body: {
+            query: {
+                terms: {
+                    "aid.keyword": aidArr
+                }
+            }
+        }
+    }, function (error, response, status) {
+        if (error) {
+            console.log("search error: " + error)
+        }
+        else {
+            console.log("--- Response ---");
+            console.log(response);
+            console.log("--- Hits ---");
+            response.hits.hits.forEach(function (hit) {
+                data.push(hit._source)
+                console.log(hit._source);
+            })
+            
+            return data
+        }
+    });
 }

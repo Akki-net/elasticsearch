@@ -9,7 +9,11 @@ app.use(express.json())
 app.use(requestLogger)
 
 
-mongoose.connect('mongodb://localhost:27017/ImagesbazaarDB_MongoDBv2')
+mongoose.connect(`mongodb://localhost:27017/ImagesbazaarDB_MongoDBv2`,
+    {
+        useNewUrlParser: true,
+        useUnifiedTopology: true
+    })
     .then(result => {
         console.log('connected to mongoDB')
     })

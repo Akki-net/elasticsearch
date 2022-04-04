@@ -1,7 +1,7 @@
 'use strict'
 const client = require('../connection')
 // const inputfile = require('../constituencies.json')
-const { makebulk, indexall, processText } = require('../utils/helperFunc')
+const { makebulk, indexall, processText, seekResult } = require('../utils/helperFunc')
 const T_images_full_archieve_Mongodb_2022 = require('../models/T_images_full_archieve_Mongodb_2022')
 const T_allkeyword_full = require('../models/T_allkeyword_full')
 
@@ -128,10 +128,9 @@ exports.addBulk = async (req, res, next) => {
   try {
     let countNow = 0
     const tc = await T_images_full_archieve_Mongodb_2022.count()
-
     while (countNow !== tc) {
-      const inputfile = await T_images_full_archieve_Mongodb_2022.find({}).sort({ _id: -1 }).skip(countNow).limit(1000)
-      countNow += 1000
+      const inputfile = await T_images_full_archieve_Mongodb_2022.find({}).skip(countNow).limit(500)
+      countNow += 500
       console.log('count now:', countNow)
       // res.status(201).send(`<h2>Please wait...</h2>`)
 
@@ -143,8 +142,7 @@ exports.addBulk = async (req, res, next) => {
       });
     }
 
-    res.status(201).send(`<h2>Documents are added successfully!</h2>`)
-
+    res.status(201).send(`<h2>Indexing is in progress...</h2>`)
   } catch (error) {
     next(error)
   }
@@ -155,7 +153,7 @@ exports.simpleSearch = async (req, res, next) => {
     const { keyword } = req.query
     client.search({
       index: 'imagesbazaar',
-      type: 'search',
+      type: 'viewAll',
       body: {
         query: {
           match: { "F_imgid": keyword }
@@ -184,50 +182,47 @@ exports.simpleSearch = async (req, res, next) => {
 exports.searchByText = async (req, res, next) => {
   try {
     const { keyword } = req.params
-    console.log('check keyword', keyword)
-    let aidArr = []
+    let aidArr = [], data = [], keywordLength, keyNow = 0;
 
-    processText(keyword, function (resp) {
+    processText(keyword, async function (resp) {
+      console.log('check keywords', resp)
+      keywordLength = resp.length;
       resp.forEach(async searchKey => {
-        const Akeyword = new RegExp(searchKey, 'i')
+        const Akeyword = new RegExp(`\\b${searchKey}\\b`, 'i')
         const keyAid = await T_allkeyword_full.find({ Akeyword })
-        aidArr = keyAid.map(item => item.aid.toString())
-        console.log('check aid Array', aidArr)
-      })
-    })
+        aidArr = [...aidArr, ...keyAid.map(item => item.aid.toString())]
 
-    client.search({
-      index: 'imagesbazaar',
-      type: 'search',
-      body: {
-        query: {
-          filtered: {
+        client.search({
+          index: 'imagesbazaar',
+          type: 'viewAll',
+          body: {
             query: {
-              match_all: {}
-            },
-            filter: {
               terms: {
-                aid: aidArr
+                "aid.keyword": aidArr
               }
             }
           }
-        },
-      }
-    }, function (error, response, status) {
-      if (error) {
-        console.log("search error: " + error)
-      }
-      else {
-        console.log("--- Response ---");
-        console.log(response);
-        console.log("--- Hits ---");
-        response.hits.hits.forEach(function (hit) {
-          res.status(200).json({ data: hit })
-          console.log(hit);
-        })
-      }
-    });
-
+        }, function (error, response, status) {
+          if (error) {
+            console.log("search error: " + error)
+          }
+          else {
+            console.log("--- Response ---");
+            console.log(response);
+            // console.log("--- Hits ---");
+            keyNow += 1
+            response.hits.hits.forEach(function (hit) {
+              data.push(hit._source)
+              // console.log(hit._source);
+            })
+            // console.log('key', keyNow, keywordLength)
+            if (keyNow === keywordLength) {
+              res.status(200).json({ data, tc: data.length })
+            }
+          }
+        });
+      })
+    })
 
   } catch (error) {
     next(error)
