@@ -53,32 +53,37 @@ exports.processText = function (keyword, callback) {
     callback(filteredCases)
 }
 
-exports.seekResult = (aidArr) => {
-    let data = []
-    client.search({
-        index: 'imagesbazaar',
-        type: 'viewAll',
-        body: {
-            query: {
-                terms: {
-                    "aid.keyword": aidArr
+exports.stopKeyword = (e) => {
+    try {
+        keywords = new Array("a", "$", "&", ";", ",", "?", "no", "0", "6", "7", "8", "9", "#", "-", "+", "*", "b", "c", "d", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "at", "above", "ad", ",ads", "ages", "all", "along", "among", "an", "and", "are", "as", "behind", "being", "beings", "below", "besides", "body", "bodies", "both", "but", "clothing", "cloth", "clothes", "clad", "does", "down", "dress", "dresses", "each", "eight", "either", "few", "find", "from", "front", "get", "garment", "garments", "had", "has", "have", "having", "id", "if", "image", "images", "into", "is", "isn", "it", "last", "life", "like", "moods", "much", "must", "next", "of", "on", "ours", "outfits", "outfit", "over", "pc", "Photo", "photos", "photographs", "photograph", "photography", "pictures", "picture", "pic", "pics", "pix", "same", "shoot", "shoots", "shots", "shot", "site", "so", "still", "stock", "ten", "text", "than", "that", "the", "their", "them", "through", "towards", "under", "up", "using", "viewed", "very", "wala", "wear", "wearing", "website", "whose", "with", "within", "year", "years", "in", "able", "about", "after", "again", "almost", "already", "also", "although", "am", "another", "any", "around", "based", "be", "because", "been", "before", "being", "between", "both", "bring", "but", "by", "came", "can", "com", "come", "comes", "could", "collection", "collections", "did", "do", "does", "doing", "done", "each", "eight", "else", "ethnicity", "even", "every", "f", "for", "from", "g", "get", "gets", "getting", "go", "going", "got", "h", "had", "has", "have", "he", "her", "here", "him", "himself", "his", "how", "however", "i", "if", "in", "including", "into", "is", "it", "its", "j", "just", "k", "kb", "know", "l", "like", "looks", "m", "making", "many", "may", "mb", "me", "means", "might", "more", "most", "move", "mr", "much", "must", "my", "n", "need", "needs", "never", "nice", "nine", "no", "now", "o", "of", "often", "oh", "ok", "on", "or", "org", "other", "our", "out", "over", "own", "p", "piece", "q", "r", "rather", "re", "really", "s", "said", "same", "say", "says", "see", "seven", "several", "she", "should", "since", "six", "so", "some", "something", "still", "stuff", "such", "t", "take", "ten", "than", "that", "the", "their", "them", "then", "there", "these", "they", "thing", "things", "this", "those", "through", "to", "too", "took", "u", "under", "up", "us", "use", "used", "using", "usual", "v", "ve", "very", "via", "w", "want", "was", "way", "we", "well", "were", "what", "when", "where", "whether", "which", "while", "whilst", "who", "why", "will", "with", "within", "would", "x", "y", "yes", "yet", "you", "your", "putting", "give", "taking", "take", "near", "ups", "small", "dressing", "age");
+        var c, f, d, b, a;
+        b = -1;
+        f = "";
+        while (b < e.length) {
+            c = "";
+            b++;
+            for (; b < e.length; b++) {
+                ch = e.charAt(b);
+                if (ch == " " || ch == "&" || ch == ";" || ch == "," || ch == "#") {
+                    break
+                }
+                c = c + ch
+            }
+            a = 0;
+            for (d = 0; d < keywords.length; d++) {
+                if (c.toLowerCase() == keywords[d].toLowerCase()) {
+                    a = 1;
+                    break
                 }
             }
+            if (a == 0) {
+                f = f + c + " "
+            }
         }
-    }, function (error, response, status) {
-        if (error) {
-            console.log("search error: " + error)
-        }
-        else {
-            console.log("--- Response ---");
-            console.log(response);
-            console.log("--- Hits ---");
-            response.hits.hits.forEach(function (hit) {
-                data.push(hit._source)
-                console.log(hit._source);
-            })
-            
-            return data
-        }
-    });
+    
+        return f;
+    } catch (e) {
+        console.log("Catch in fetchAllLowerwaist " + e);
+        return e;
+    }
 }
